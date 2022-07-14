@@ -1,13 +1,5 @@
 <template>
-  <div>
-    <a-breadcrumb>
-      <a-breadcrumb-item>
-        <nuxt-link to="/"> INICIO </nuxt-link>
-      </a-breadcrumb-item>
-      <a-breadcrumb-item>CONFIGURACIÓN</a-breadcrumb-item>
-    </a-breadcrumb>
-    <a-page-header title="CONFIGURACIÓN" @back="() => $router.back()" />
-    <a-divider />
+  <Page title="CONFIGURACIÓN">
     <a-radio-group>
       <a-tabs default-active-key="1" tab-position="left">
         <a-tab-pane key="1" tab="VALORES INICIALES">
@@ -19,16 +11,18 @@
         <a-tab-pane key="3" tab="USUARIOS"> Content of Tab 3 </a-tab-pane>
       </a-tabs>
     </a-radio-group>
-  </div>
+  </Page>
 </template>
 
 <script>
+import Page from "../components/shared/Page.vue";
 export default {
   name: "SettingsPage",
+  components: {
+    Page,
+  },
   data() {
     return {};
   },
 };
 </script>
-
-<style lang="less" scoped></style>

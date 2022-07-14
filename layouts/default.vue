@@ -26,15 +26,15 @@
           <a-menu-item key="/rasterlayers">
             GESTIONAR CAPAS RÁSTER
           </a-menu-item>
-          <a-menu-item key="5"> GESTIONAR ESTILOS </a-menu-item>
+          <a-menu-item key="/styles"> GESTIONAR ESTILOS </a-menu-item>
         </a-sub-menu>
         <a-sub-menu key="sub2">
           <span slot="title">
             <a-icon type="appstore" />
             <span>SERVICIOS EXTERNOS</span>
           </span>
-          <a-menu-item key="6"> GEOSERVER </a-menu-item>
-          <a-menu-item key="8"> GEONETWORK </a-menu-item>
+          <a-menu-item key="/geoserver"> GEOSERVER </a-menu-item>
+          <a-menu-item key="/geonetwork"> GEONETWORK </a-menu-item>
         </a-sub-menu>
         <a-menu-item key="9">
           <a-icon type="appstore" />

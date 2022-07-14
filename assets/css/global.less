@@ -1,3 +1,29 @@
-* {
-  font-family: 'Jetbrains Mono', monospace;
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap");
+
+html,
+body {
+  font-family: "Poppins", sans-serif;
+}
+
+.ant-table-thead
+  > tr.ant-table-row-hover:not(.ant-table-expanded-row):not(.ant-table-row-selected)
+  > td,
+.ant-table-tbody
+  > tr.ant-table-row-hover:not(.ant-table-expanded-row):not(.ant-table-row-selected)
+  > td,
+.ant-table-thead
+  > tr:hover:not(.ant-table-expanded-row):not(.ant-table-row-selected)
+  > td,
+.ant-table-tbody
+  > tr:hover:not(.ant-table-expanded-row):not(.ant-table-row-selected)
+  > td {
+  background-color: #fafafa;
+}
+
+.ant-table-column-title {
+  font-weight: bolder;
+}
+
+.mb-1 {
+  margin-bottom: 1rem;
 }
