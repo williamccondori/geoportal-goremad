@@ -16,7 +16,9 @@
       </a-input-password>
     </a-form-model-item>
     <a-form-model-item>
-      <a-button type="primary" block html-type="submit">Ingresar</a-button>
+      <a-button type="primary" block html-type="submit" :loading="isLoading">
+        Ingresar
+      </a-button>
       <a-button type="link" block>¿Olvidó su contraseña?</a-button>
     </a-form-model-item>
   </a-form-model>
@@ -26,6 +28,7 @@
 export default {
   data() {
     return {
+      isLoading: false,
       form: {
         username: "",
         password: "",
@@ -47,15 +50,30 @@ export default {
     };
   },
   methods: {
+    /**
+     * async userLogin() {
+      try {
+        let response = await this.$auth.loginWith('local', { data: this.login })
+        console.log(response)
+      } catch (err) {
+        console.log(err)
+      }
+    }
+     */
     async handleSubmit() {
-      this.$refs.ruleForm.validate(async (valid) => {
-        if (valid) {
-          console.log("Form is valid");
-        }
-      });
+      try {
+        this.isLoading = true;
+        this.$refs.ruleForm.validate(async (valid) => {
+          if (valid) {
+            console.log("Form is valid");
+          }
+        });
+      } catch (error) {
+        this.$message.error(error);
+      } finally {
+        this.isLoading = false;
+      }
     },
   },
 };
 </script>
-
-<style scoped></style>

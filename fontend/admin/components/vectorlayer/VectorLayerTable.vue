@@ -4,9 +4,14 @@
       <a-button type="dashed" size="small" @click="handleEdit(key)">
         <a-icon type="edit" />
       </a-button>
-      <a-button type="dashed" size="small" @click="handleDelete(key)">
-        <a-icon type="delete" />
-      </a-button>
+      <a-popconfirm
+        title="¿ESTÁ SEGURO QUE DESEA ELIMINAR ESTE REGISTRO?"
+        @confirm="handleDelete(key)"
+      >
+        <a-button type="dashed" size="small">
+          <a-icon type="delete" />
+        </a-button>
+      </a-popconfirm>
     </template>
   </a-table>
 </template>
