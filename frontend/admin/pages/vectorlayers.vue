@@ -22,9 +22,9 @@ export default {
     VectorLayerTable,
   },
   methods: {
-    ...mapActions(["toggleVisibleLayerDrawer"]),
+    ...mapActions(["toggleVectorLayerDrawer"]),
     handleCreate() {
-      this.toggleVisibleLayerDrawer();
+      this.toggleVectorLayerDrawer();
     },
   },
 };

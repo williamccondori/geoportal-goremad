@@ -1,5 +1,5 @@
 <template>
-  <a-table :columns="columns" :data-source="data" size="small" bordered>
+  <a-table :columns="columns" :data-source="vectorLayers" size="small" bordered>
     <template slot="actions" slot-scope="key">
       <a-button type="dashed" size="small" @click="handleEdit(key)">
         <a-icon type="edit" />
@@ -17,6 +17,8 @@
 </template>
 
 <script>
+import { mapState, mapActions } from "vuex";
+
 const columns = [
   {
     title: "NOMBRE",
@@ -33,39 +35,45 @@ const columns = [
   },
 ];
 
-const data = [
-  {
-    key: 1,
-    name: "Vector Layer 1",
-    title: "Vector Layer 1",
-  },
-  {
-    key: 2,
-    name: "Vector Layer 2",
-    title: "Vector Layer 2",
-  },
-  {
-    key: 3,
-    name: "Vector Layer 3",
-    title: "Vector Layer 3",
-  },
-];
 export default {
   data() {
     return {
       columns,
-      data,
     };
   },
+  async fetch() {
+    try {
+      await this.fetchVectorLayers();
+    } catch (error) {
+      this.$message.error(error.message);
+    }
+  },
+  computed: {
+    ...mapState(["vectorLayers"]),
+  },
   methods: {
-    handleEdit(key) {
-      console.log(key);
+    ...mapActions([
+      "fetchVectorLayers",
+      "fetchVectorLayer",
+      "deleteVectorLayer",
+      "toggleVectorLayerDrawer",
+    ]),
+    async handleEdit(vectorLayerKey) {
+      try {
+        await this.fetchVectorLayer(vectorLayerKey);
+        this.toggleVectorLayerDrawer();
+      } catch (error) {
+        this.$message.error(error.message);
+      }
     },
-    handleDelete(key) {
-      console.log(key);
+    async handleDelete(vectorLayerKey) {
+      try {
+        await this.deleteVectorLayer(vectorLayerKey);
+        this.$message.success("EL PROCESO SE HA REALIZADO CORRECTAMENTE");
+      } catch (error) {
+        this.$message.error(error.message);
+      }
     },
   },
 };
 </script>
-
-<style scoped></style>

@@ -2,7 +2,7 @@
   <a-drawer
     title="NUEVA CAPA VECTORIAL"
     width="30rem"
-    :visible="isVisibleLayerDrawer"
+    :visible="vectorLayerDrawer"
     @close="handleClose"
   >
     <a-form-model
@@ -55,10 +55,10 @@ export default {
     };
   },
   computed: {
-    ...mapState(["isVisibleLayerDrawer"]),
+    ...mapState(["vectorLayerDrawer"]),
   },
   methods: {
-    ...mapActions(["toggleVisibleLayerDrawer"]),
+    ...mapActions(["toggleVectorLayerDrawer"]),
     resetForm() {
       this.form = {
         name: "",
@@ -68,7 +68,7 @@ export default {
     },
     handleClose() {
       this.resetForm();
-      this.toggleVisibleLayerDrawer();
+      this.toggleVectorLayerDrawer();
     },
     handleSubmit() {
       this.$refs.ruleForm.validate(async (valid) => {
