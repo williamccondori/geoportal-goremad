@@ -1,0 +1,145 @@
+version: '3.4'
+
+networks:
+  gego:
+    driver: bridge
+    
+volumes:
+  postgis_data: {}
+  geonetwork_data: {}
+  geoserver_data: {}
+  pgadmin_data: {}
+  prometheus_data: {}
+  grafana_data: {}
+
+services:
+  # SERVICIOS PRINCIPALES.
+
+  # Postgis.
+  gego.postgis:
+    image: kartoza/postgis:11.5-2.8
+    container_name: gego-postgis
+    restart: unless-stopped
+    volumes:
+      - postgis_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASS=ficticio
+      - POSTGRES_DBNAME=geoportal_goremad
+      - DEFAULT_ENCODING=LATIN1
+      - DEFAULT_COLLATION=es_ES.iso88591
+      - DEFAULT_CTYPE=es_ES.iso88591 
+    networks:
+      - gego
+
+  # Geonetwork.
+  gego.geonetwork:
+    image: geonetwork:3.10.10
+    container_name: gego-geonetwork
+    restart: unless-stopped
+    volumes:
+      - geonetwork_data:/var/lib/geonetwork
+    environment:
+      - DATA_DIR=/var/lib/geonetwork/data
+      - GEONETWORK_DB_NAME=/var/lib/geonetwork/db/gn
+    depends_on:
+      - gego.postgis
+    ports:
+      - "9003:8080"
+    networks:
+      - gego
+
+  # Geoserver.
+  gego.geoserver:
+    image: kartoza/geoserver:2.17.2
+    container_name: gego-geoserver
+    restart: unless-stopped
+    volumes:
+      - geoserver_data:/opt/geoserver/data_dir
+    environment:
+      - ENCODING='UTF8'
+      - TIMEZONE='America/Lima'
+      - INITIAL_MEMORY=2G
+      - MAXIMUM_MEMORY=4G
+      - TOMCAT_EXTRAS=false
+      - GEOSERVER_ADMIN_USER=admin
+      - GEOSERVER_ADMIN_PASSWORD=ficticio
+      - GEOSERVER_DATA_DIR=/opt/geoserver/data_dir
+    depends_on:
+      - gego.postgis
+    ports:
+      - "9004:8080"
+    networks:
+      - gego
+
+  # HERRAMIENTAS DE ADMINISTRACION.
+
+  # Pgadmin.
+  gego.pgadmin:
+    image: dpage/pgadmin4:6
+    container_name: gego-pgadmin
+    restart: unless-stopped
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    environment:
+      - "PGADMIN_DEFAULT_EMAIL=admin@ficticio.com"
+      - "PGADMIN_DEFAULT_PASSWORD=ficticio"
+    depends_on:
+      - gego.postgis
+    ports:
+      - "9002:80"
+    networks:
+      - gego
+
+  # Prometheus.
+  gego.prometheus:
+    image: prom/prometheus:latest
+    container_name: gego-prometheus
+    restart: unless-stopped
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    expose:
+      - 9090
+    networks:
+      - gego
+
+  gego.postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: gego-postgres-exporter
+    restart: unless-stopped
+    environment:
+      - "DATA_SOURCE_NAME=postgresql://postgres:ficticio@gego-postgis:5432/?sslmode=disable"
+    depends_on:
+      - gego.postgis
+    expose:
+      - 9187
+    networks:
+      - gego
+    links:
+      - gego.postgis
+      - gego.prometheus
+
+  # Grafana.
+  gego.grafana:
+    image: grafana/grafana:latest
+    container_name: gego-grafana
+    restart: unless-stopped 
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      - "GF_SECURITY_ADMIN_USER=admin"
+      - "GF_SECURITY_ADMIN_PASSWORD=admin"
+      - "GF_USERS_ALLOW_SIGN_UP=false"
+    depends_on:
+      - gego.prometheus
+    ports:
+      - "9001:3000"
+    networks:
+      - gego

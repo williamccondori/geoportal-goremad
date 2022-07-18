@@ -7,11 +7,13 @@ from application.dtos.vector_layers.get_all_vector_layers_response import GetAll
 from application.dtos.vector_layers.get_vector_layer_response import GetVectorLayerResponse
 from application.dtos.vector_layers.update_vector_layer_request import UpdateVectorLayerRequest
 from application.dtos.vector_layers.update_vector_layer_response import UpdateVectorLayerResponse
+import models
 
 
 class VectorLayerService:
 
     async def get_all_vector_layers(self) -> List[GetAllVectorLayersResponse]:
+        return db.query(models.VectorLayer).all()
         return [
             GetAllVectorLayersResponse(key=uuid4()),
         ]
