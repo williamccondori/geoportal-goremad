@@ -4,13 +4,16 @@ networks:
   geogoremad:
     driver: bridge
 
+volumes:
+  postgis: {}
+ 
 services:
   geogoremad.postgis:
     image: kartoza/postgis:11.5-2.8
     container_name: geogoremad-postgis
     restart: unless-stopped
     volumes:
-      - ./data/postgis:/var/lib/postgresql/data
+      - postgis:/var/lib/postgresql
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASS=ficticio
@@ -27,6 +30,8 @@ services:
     image: dpage/pgadmin4:6
     container_name: geogoremad-pgadmin
     restart: unless-stopped
+    volumes:
+      - ./data/pgadmin:/var/lib/pgadmin
     environment:
       - PGADMIN_DEFAULT_EMAIL=admin@ficticio.com
       - PGADMIN_DEFAULT_PASSWORD=ficticio
