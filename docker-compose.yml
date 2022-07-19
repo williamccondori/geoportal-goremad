@@ -4,40 +4,35 @@ networks:
   geogoremad:
     driver: bridge
 
-volumes:
-  postgis: {}
- 
 services:
-  geogoremad.postgis:
+  geogoremad.postgis.dev:
     image: kartoza/postgis:11.5-2.8
-    container_name: geogoremad-postgis
+    container_name: geogoremad_postgis_dev
     restart: unless-stopped
     volumes:
-      - postgis:/var/lib/postgresql
+      - ./data/geogoremad_postgis:/var/lib/postgresql
+    env_file:
+      - .env.postgis
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASS=ficticio
-      - POSTGRES_DBNAME=geogoremad-desarrollo
       - DEFAULT_ENCODING=LATIN1
       - DEFAULT_COLLATION=es_ES.iso88591
       - DEFAULT_CTYPE=es_ES.iso88591
     ports:
-      - 5432:5432
+      - 9100:5432
     networks:
       - geogoremad
 
-  geogoremad.pgadmin:
+  geogoremad.pgadmin.dev:
     image: dpage/pgadmin4:6
-    container_name: geogoremad-pgadmin
+    container_name: geogoremad_pgadmin_dev
     restart: unless-stopped
     volumes:
-      - ./data/pgadmin:/var/lib/pgadmin
-    environment:
-      - PGADMIN_DEFAULT_EMAIL=admin@ficticio.com
-      - PGADMIN_DEFAULT_PASSWORD=ficticio
+      - ./data/geogoremad_pgadmin:/var/lib/pgadmin
+    env_file:
+      - .env.pgadmin
     depends_on:
       - geogoremad.postgis
     ports:
-      - 9001:80
+      - 9102:80
     networks:
       - geogoremad

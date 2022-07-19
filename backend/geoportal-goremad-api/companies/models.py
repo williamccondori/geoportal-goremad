@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 
@@ -7,32 +9,27 @@ from shared.database import Base
 class Company(Base):
     __tablename__ = 'empresa'
     __table_args__ = {"schema": "geogoremad_seguridad"}
-
-    # Columnas
-    id = Column('id_empresa', Integer, primary_key=True)
-    code = Column('codigo_empresa', String(15))
-    name = Column('nombre_empresa', String(100))
-    description = Column('descripcion_empresa', String(255))
-    logo = Column('logo_empresa', String(255))
-    url = Column('url_empresa', String(255))
-    status = Column('estado', Boolean, default=True)
-    created = Column('creado', DateTime)
-    modified = Column('modificado', DateTime)
-
-    # Relaciones
-    settings = relationship("CompanyConfiguration", backref="user")
+    id = Column('id_empresa', Integer, primary_key=True, index=True)
+    code = Column('vc_codigo_empresa', String(15))
+    name = Column('vc_nombre_empresa', String(100))
+    description = Column('vc_descripcion_empresa', String(255))
+    logo = Column('vc_logo_empresa', String(255), nullable=True)
+    url = Column('vc_url_empresa', String(255), nullable=True)
+    is_enabled = Column('bo_habilitado', Boolean, default=True)
+    status = Column('bo_estado', Boolean, default=True)
+    created = Column('ts_creado', DateTime, default=datetime.now)
+    modified = Column('ts_modificado', DateTime, default=datetime.now)
+    settings = relationship('CompanyConfiguration')
+    users = relationship('User')
 
 
 class CompanyConfiguration(Base):
-    __tablename__ = 'configuracion_empresa'
+    __tablename__ = 'empresa_configuracion'
     __table_args__ = {"schema": "geogoremad_seguridad"}
-
-    # Columnas
-    company_id = Column('id_empresa', ForeignKey('geogoremad_seguridad.empresa.id_empresa'), primary_key=True)
-    key = Column('clave_configuracion', String(15), primary_key=True)
-    value = Column('valor_configuracion', String(255))
-    status = Column('estado', Boolean, default=True)
-    created = Column('creado', DateTime)
-    modified = Column('modificado', DateTime)
-
-    # Relaciones
+    id = Column('id_empresa_configuracion', Integer, primary_key=True, index=True)
+    company_id = Column('id_empresa', Integer, ForeignKey("geogoremad_seguridad.empresa.id_empresa"))
+    key = Column('vc_clave_configuracion', String(15))
+    value = Column('vc_valor_configuracion', String(255))
+    status = Column('bo_estado', Boolean, default=True)
+    created = Column('ts_creado', DateTime, default=datetime.now)
+    modified = Column('ts_modificado', DateTime, default=datetime.now)
