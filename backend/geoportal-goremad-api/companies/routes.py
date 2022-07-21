@@ -6,21 +6,14 @@ from starlette.status import HTTP_400_BAD_REQUEST
 
 from companies import services
 from companies.schemas import GetCompaniesResponse, CreateCompanyResponse, CreateCompanyRequest, GetCompanyResponse
-from shared.database import SessionLocal
+from shared.dependencies.get_current_user_information import get_current_user_information
+from shared.dependencies.get_database_context import get_database_context
 
 company_router = APIRouter()
 
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
 @company_router.patch("/check", response_model=bool)
-async def check_companies(db: Session = Depends(get_db)) -> bool:
+async def check_companies(db: Session = Depends(get_database_context)) -> bool:
     try:
         return services.check_companies(db)
     except Exception as e:
@@ -28,7 +21,8 @@ async def check_companies(db: Session = Depends(get_db)) -> bool:
 
 
 @company_router.get("/", response_model=List[GetCompaniesResponse])
-async def get_companies(db: Session = Depends(get_db)) -> List[GetCompaniesResponse]:
+async def get_companies(db: Session = Depends(get_database_context),
+                        _: str = Depends(get_current_user_information)) -> List[GetCompaniesResponse]:
     try:
         return services.get_companies(db)
     except Exception as e:
@@ -36,7 +30,8 @@ async def get_companies(db: Session = Depends(get_db)) -> List[GetCompaniesRespo
 
 
 @company_router.get("/{company_id}", response_model=GetCompanyResponse)
-async def get_company(company_id: int, db: Session = Depends(get_db)) -> GetCompanyResponse:
+async def get_company(company_id: int, db: Session = Depends(get_database_context),
+                      _: str = Depends(get_current_user_information)) -> GetCompanyResponse:
     try:
         return services.get_company(db, company_id)
     except Exception as e:
@@ -44,7 +39,8 @@ async def get_company(company_id: int, db: Session = Depends(get_db)) -> GetComp
 
 
 @company_router.post("/", response_model=CreateCompanyResponse, status_code=201)
-async def create_company(company: CreateCompanyRequest, db: Session = Depends(get_db)) -> CreateCompanyResponse:
+async def create_company(company: CreateCompanyRequest, db: Session = Depends(get_database_context),
+                         _: str = Depends(get_current_user_information)) -> CreateCompanyResponse:
     try:
         return services.create_company(db, company)
     except Exception as e:
@@ -52,7 +48,8 @@ async def create_company(company: CreateCompanyRequest, db: Session = Depends(ge
 
 
 @company_router.delete("/{company_id}")
-async def delete_company(company_id: int, db: Session = Depends(get_db)) -> int:
+async def delete_company(company_id: int, db: Session = Depends(get_database_context),
+                         _: str = Depends(get_current_user_information)) -> int:
     try:
         return services.delete_company(db, company_id)
     except Exception as e:
