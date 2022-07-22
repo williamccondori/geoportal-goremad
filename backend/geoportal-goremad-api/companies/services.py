@@ -10,10 +10,11 @@ from companies.schemas import (
     CreateCompanyRequest,
     CreateCompanyResponse,
 )
+from shared.exceptions.entity_not_found_exception import EntityNotFoundException
 from users.models import User, UserConfiguration
 
 
-def __get_company_by_code(db: Session, code: str) -> Company:
+def get_company_by_code(db: Session, code: str) -> Company:
     return db.query(Company).where(Company.code == code, Company.status).first()
 
 
@@ -41,11 +42,9 @@ def get_companies(db: Session) -> List[GetCompaniesResponse]:
 
 
 def get_company(db: Session, company_id: int) -> GetCompanyResponse:
-    company_exists = check_company(db, company_id)
-    if not company_exists:
-        raise Exception("La empresa con código {} no existe".format(company_id))
-
-    company = db.query(Company).get(company_id)
+    company: Company = db.query(Company).get(company_id)
+    if not company or not company.status:
+        raise EntityNotFoundException(type(Company))
     return GetCompanyResponse(
         id=company.id,
         code=company.code,
@@ -57,25 +56,25 @@ def get_company(db: Session, company_id: int) -> GetCompanyResponse:
 
 
 def create_company(db: Session, company: CreateCompanyRequest) -> CreateCompanyResponse:
-    company_exists = __get_company_by_code(db, company.code)
+    company_exists = get_company_by_code(db, company.code)
     if company_exists:
         raise Exception("La empresa con código {} ya existe".format(company.code))
 
-    # Vlidacion de contrasenia
+    # Password validation
     user_default_password = company.password
-    if len(user_default_password) < 8:  # Si la contrasenia es menor a 8 caracteres
+    if len(user_default_password) < 8:  # If password is less than 8 characters
         raise Exception("La contraseña debe tener al menos 8 caracteres")
-    if user_default_password.isalpha():  # Si solo tiene letras
+    if user_default_password.isalpha():  # If password is all letters
         raise Exception("La contraseña debe tener al menos un caracter numérico")
-    if user_default_password.isnumeric():  # Si solo tiene numeros
+    if user_default_password.isnumeric():  # If password is all numbers
         raise Exception("La contraseña debe tener al menos un caracter alfabético")
 
-    # Validacion de codigo
+    # Code validation
     company_code = company.code.lower()
-    if len(company_code) > 15:  # Si el codigo es mayor a 15 caracteres
+    if len(company_code) > 15:  # If code is more than 15 characters
         raise Exception("El código debe tener menos de 15 caracteres")
     if not company_code.isalpha():  # Si solo tiene letras
-        # Si el codigo tiene espacios o numeros
+        # If code isn't all letters
         raise Exception("El código debe tener solo caracteres alfabéticos")
 
     # CONFIGURACION DE LA EMPRESA
@@ -133,7 +132,7 @@ def delete_company(db: Session, company_id: int) -> int:
     company = db.query(Company).get(company_id)
     company.status = False
 
-    # Eliminar configuraciones
+    # Delete all settings
     settings = (
         db.query(CompanyConfiguration)
         .where(CompanyConfiguration.company_id == company_id)
@@ -142,7 +141,7 @@ def delete_company(db: Session, company_id: int) -> int:
     for setting in settings:
         setting.status = False
 
-    # Eliminar usuarios
+    # Delete all users
     users = db.query(User).where(User.company_id == company_id).all()
     for user in users:
         user.status = False
