@@ -2,12 +2,17 @@ import os
 from tempfile import NamedTemporaryFile
 from typing import List
 
+import geopandas
 from sqlalchemy.orm import Session
 
+from shared.database import engine
 from shared.exceptions.entity_not_found_exception import EntityNotFoundException
 from vector_layers.models import VectorLayer
 from vector_layers.schemas import GetVectorLayersResponse, GetVectorLayerResponse, CreateVectorLayerRequest, \
     CreateVectorLayerResponse
+
+DEFAULT_CRS = 'EPSG:4326'
+SCHEMA_VECTOR_LAYERS = 'geogoremad_capas'
 
 
 def get_vector_layers(db: Session) -> List[GetVectorLayersResponse]:
@@ -35,14 +40,23 @@ def get_vector_layer(db: Session, vector_layer_id: int) -> GetVectorLayerRespons
 
 def create_vector_layer(db: Session,
                         vector_layer_request: CreateVectorLayerRequest) -> CreateVectorLayerResponse:
-    vector_file = NamedTemporaryFile(delete=False)
+    vector_layer_name = vector_layer_request.name.lower()
+    if len(vector_layer_name) > 15:
+        raise Exception()
+    if not vector_layer_name.isalpha():
+        raise Exception()
+
+    vector_file = NamedTemporaryFile(delete=False, suffix='.zip')
     try:
         vector_file.write(vector_layer_request.file)
-        print(vector_file.name)
+        gdf = geopandas.read_file(vector_file.name)
+        gdf.crs = DEFAULT_CRS
+        gdf.to_postgis(vector_layer_name, engine, if_exists='replace', schema=SCHEMA_VECTOR_LAYERS)
     finally:
         vector_file.close()
         os.unlink(vector_file.name)
 
+    """
     new_vector_layer: VectorLayer = VectorLayer(
         name=vector_layer_request.name,
         title=vector_layer_request.title,
@@ -52,11 +66,8 @@ def create_vector_layer(db: Session,
     db.add(new_vector_layer)
     db.commit()
     db.refresh(new_vector_layer)
-
+    """
     return CreateVectorLayerResponse(
-        name=new_vector_layer.name,
-        description=new_vector_layer.description,
-        url=new_vector_layer.url,
     )
 
 
